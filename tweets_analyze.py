@@ -1,4 +1,4 @@
-# pip install pandas gensim nltk scikit-learn, matplotlib   # first install if haven't
+# pip install pandas, numpy, gensim, nltk, scikit-learn, matplotlib   # first install if haven't
 
 import pandas as pd
 import nltk
