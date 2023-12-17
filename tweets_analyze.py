@@ -28,7 +28,6 @@ immigration_keywords = ['immigrant', 'border', 'refugee', 'asylum', 'deportation
 
 all_keywords = political_keywords + gender_keywords + religion_keywords + immigration_keywords
 
-
 def main():
     # -----------------------------
     # 1. Read CSV Files
@@ -125,7 +124,7 @@ def main():
 
     # Plot for each bias type
     for bias_type, keywords in bias_keywords.items():
-        plot_bias_type(reduced_embeddings, bias_type, keywords, offset, f't-SNE visualization of {bias_type} bias')
+        plot_bias_type(reduced_embeddings, cluster_labels, bias_type, keywords, offset, f't-SNE visualization of {bias_type} bias')
 
 
 
@@ -188,12 +187,16 @@ def extract_embeddings(model, keywords):
     return embeddings
 
 # Plotting figure for a specific bias type
-def plot_bias_type(reduced_embeddings, bias_type, keywords, offset, title):
-    # Define colors for each model
-    model_colors = {
-        'my_word2vec_model': 'red',
-        'google_news_model': 'blue'
+def plot_bias_type(reduced_embeddings, cluster_labels, bias_type, keywords, offset, title):
+
+    # Markers for each model
+    model_markers = {
+        'russian_troll_model': 'o',  # Circle marker for Russian Troll Model
+        'google_news_model': 'x',    # Cross marker for Google News Model
     }
+
+    # Colormap for clusters
+    cluster_colormap = plt.cm.get_cmap('viridis', len(np.unique(cluster_labels)))
 
     plt.figure(figsize=(10, 8))
     
@@ -201,26 +204,38 @@ def plot_bias_type(reduced_embeddings, bias_type, keywords, offset, title):
     for word in keywords:
         if word in all_keywords:
             index = all_keywords.index(word)
+            # Use cluster label to determine color
+            color = cluster_colormap(cluster_labels[index])
             plt.scatter(reduced_embeddings[index, 0], reduced_embeddings[index, 1],
-                        color=model_colors['my_word2vec_model'], label='Russian Troll Model' if word == keywords[0] else "")
+                        color=color, marker=model_markers['russian_troll_model'],
+                        label='Russian Troll Model' if word == keywords[0] else "")
             plt.text(reduced_embeddings[index, 0], reduced_embeddings[index, 1], word)
     
     # Plot embeddings from Google News model
     for word in keywords:
         if word in all_keywords:
             index = all_keywords.index(word) + offset
+            # Use cluster label to determine color
+            color = cluster_colormap(cluster_labels[index])
             plt.scatter(reduced_embeddings[index, 0], reduced_embeddings[index, 1],
-                        color=model_colors['google_news_model'], label='Google News Model' if word == keywords[0] else "")
+                        color=color, marker=model_markers['google_news_model'], 
+                        label='Google News Model' if word == keywords[0] else "")
             plt.text(reduced_embeddings[index, 0], reduced_embeddings[index, 1], word)
     
     plt.title(title)
     plt.xlabel('t-SNE feature 1')
     plt.ylabel('t-SNE feature 2')
-    plt.legend()
+
+    plt.legend(handles=[
+        plt.Line2D([0], [0], marker=model_markers['russian_troll_model'], label='Russian Troll Model',
+                   markersize=7, linestyle='None'),
+        plt.Line2D([0], [0], marker=model_markers['google_news_model'], label='Google News Model',
+                   markersize=6, linestyle='None')
+    ])
+
     plt.show()
 
 
 if __name__ == '__main__':
     main()
-
 
