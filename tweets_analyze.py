@@ -28,6 +28,7 @@ immigration_keywords = ['immigrant', 'border', 'refugee', 'asylum', 'deportation
 
 all_keywords = political_keywords + gender_keywords + religion_keywords + immigration_keywords
 
+
 def main():
     # -----------------------------
     # 1. Read CSV Files
@@ -71,17 +72,17 @@ def main():
     google_news_model = KeyedVectors.load_word2vec_format(google_news_path, binary=True)
     print("Pre-trained Google News model loaded successfully!")
 
-    # Perform some basic comparisons for example word vector in both models
-    word = 'democrat'
-    if word in google_news_model.key_to_index and word in my_word2vec_model.wv.key_to_index:
-        google_vector = google_news_model[word]
-        my_vector = my_word2vec_model.wv[word]
+    # Perform basic comparisons for the keywords vector in both models
+    for word in all_keywords:
+        if word in google_news_model.key_to_index and word in my_word2vec_model.wv.key_to_index:
+            google_vector = google_news_model[word]
+            my_vector = my_word2vec_model.wv[word]
 
-        # Calculate cosine similarity
-        similarity = cosine_similarity([google_vector], [my_vector])[0][0]
-        print(f"Cosine similarity between '{word}' in both models: {similarity}")
-    else:
-        print(f"The word '{word}' is not in both models.")
+            # Calculate cosine similarity
+            similarity = cosine_similarity([google_vector], [my_vector])[0][0]
+            print(f"Cosine similarity between '{word}' in both models: {similarity}")
+        else:
+            print(f"The word '{word}' is not in both models.")
 
     print("Load Pre-Trained word embeddings and compare successfully!")
 
@@ -97,7 +98,7 @@ def main():
 
     # Perform spectral clustering
     # Determine the number of clusters (k)
-    num_clusters = 5
+    num_clusters = 7
     clustering = SpectralClustering(n_clusters=num_clusters, assign_labels='discretize', random_state=0)
     cluster_labels = clustering.fit_predict(combined_embeddings)
 
