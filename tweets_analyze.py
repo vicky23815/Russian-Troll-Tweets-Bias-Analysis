@@ -93,16 +93,36 @@ def main():
     my_model_embeddings = extract_embeddings(my_word2vec_model.wv, all_keywords)
     google_model_embeddings = extract_embeddings(google_news_model, all_keywords)
 
+    # Determine the number of clusters (k)
+    num_clusters = 7
+
+    # Perform clustering on my_model_embeddings
+    clustering_my_model = SpectralClustering(n_clusters=num_clusters, assign_labels='discretize', random_state=0)
+    cluster_labels_my_model = clustering_my_model.fit_predict(my_model_embeddings)
+
+    # Perform clustering on google_model_embeddings
+    clustering_google_model = SpectralClustering(n_clusters=num_clusters, assign_labels='discretize', random_state=0)
+    cluster_labels_google_model = clustering_google_model.fit_predict(google_model_embeddings)
+
+    # Create a DataFrame with words, their cluster labels from each model, and any other relevant information
+    comparison_df = pd.DataFrame({
+        'word': all_keywords,
+        'my_model_cluster': cluster_labels_my_model,
+        'google_news_cluster': cluster_labels_google_model
+    })
+
+    # Perform cross-tabulation to see how often words in the same cluster in one model are also in the same cluster in the other model
+    cross_tab = pd.crosstab(comparison_df['my_model_cluster'], comparison_df['google_news_cluster'])
+    print(cross_tab)
+
     # Combine embeddings from both models for clustering
     combined_embeddings = np.vstack((my_model_embeddings, google_model_embeddings))
 
     # Perform spectral clustering
-    # Determine the number of clusters (k)
-    num_clusters = 7
     clustering = SpectralClustering(n_clusters=num_clusters, assign_labels='discretize', random_state=0)
     cluster_labels = clustering.fit_predict(combined_embeddings)
 
-    print("Perform Spectral Clustering successfully!")
+    print("Perform Spectral Clustering and comparison successfully!")
 
     # -----------------------------
     # 6. Visualize
